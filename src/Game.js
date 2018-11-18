@@ -2,8 +2,9 @@ import React, { Component } from 'react';
 import Toggle from "react-toggle-component"
 import "react-toggle-component/styles.css"
 import {Button, ButtonGroup} from 'react-bootstrap/lib'
-import {Grid, Row, Col} from 'react-bootstrap/lib'
+//import {Grid, Row, Col} from 'react-bootstrap/lib'
 
+import AI from './AI.js'
 import Board from './Board.js'
 import New from './icon/New.svg'
 import Undo from './icon/Undo.svg'
@@ -16,11 +17,20 @@ const DIR = [     [-1, 1], [-1, 0], [-1, -1],
 
 class Game extends Component {
 
+    pause = 50
+
+    agent
+    agentX = 0
+    agentY = 0
+    agentAct = 'UNCOVER'
+
+    RESTART = false
+
     constructor(props){
         super(props)
-        let rows = 10
-        let cols = 10
-        let mines = 20      
+        let rows = 16
+        let cols = 16
+        let mines = 40   
 
         let start = this.generateBoard(rows, cols, mines)
 
@@ -45,6 +55,11 @@ class Game extends Component {
         this.redo = this.redo.bind(this)
         this.restart = this.restart.bind(this)
         this.aitoggle = this.aitoggle.bind(this)
+
+        this.agent = new AI({rows: rows, cols: cols, mines: mines, start: start.pos})
+        this.agentX = start.pos.x
+        this.agentY = start.pos.y
+        this.agentAct = 'UNCOVER'
     }
 
     generateBoard(rows, cols, mines){
@@ -86,6 +101,7 @@ class Game extends Component {
 
     aitoggle(){
         let mode = this.state.aimode
+        if(mode && this.agent.active) this.agent.active = false
         this.setState({aimode: !mode})
     }
 
@@ -124,6 +140,13 @@ class Game extends Component {
                         start: start.pos,
                         aimode: mode,
                     })
+
+        this.agent = new AI({rows: rows, cols: cols, mines: mines, start: start.pos})
+        this.agentX = start.pos.x
+        this.agentY = start.pos.y
+        this.agentAct = 'UNCOVER'
+
+        this.RESTART = true
     }
 
     uncoverClick(tile){
@@ -139,7 +162,7 @@ class Game extends Component {
         if(tile.mine){
             next.gameover = true
         }
-        else if(tile.number === 0){
+        else if(tile.number === 0 && !this.state.aimode){
             this.dfsUncover(next, tile)
         }
 
@@ -177,19 +200,20 @@ class Game extends Component {
 
         if(next.gameover){
             alert('BOOOOM!')
-            next.flag = 0
-            for(let i=0; i<this.state.rows; i++){
-                for(let j=0; j<this.state.cols; j++){
-                    let t = next.board[i][j]
-                    if(!t.uncover){
-                        if(!t.flag) t.uncover = true
-                        else if(!t.mine){
-                            t.flag = false
-                            t.uncover = true
-                        }
-                    }
-                }
-            }
+            this.agent.active = false
+            // next.flag = 0
+            // for(let i=0; i<this.state.rows; i++){
+            //     for(let j=0; j<this.state.cols; j++){
+            //         let t = next.board[i][j]
+            //         if(!t.uncover){
+            //             if(!t.flag) t.uncover = true
+            //             else if(!t.mine){
+            //                 t.flag = false
+            //                 t.uncover = true
+            //             }
+            //         }
+            //     }
+            // }
         }
 
         if(next.cover === 0 && next.flag === 0){
@@ -240,11 +264,69 @@ class Game extends Component {
 
     componentDidMount(){
         this.uncoverClick(this.state.start)
+
+        const history = this.state.history.slice();
+        const current = history[this.state.step];
+        if(this.state.aimode){
+            let act = this.agent.getAction(current.board[this.agentX][this.agentY].number)
+            this.agentAct = act.action
+            this.agentX = act.tile.x
+            this.agentY = act.tile.y
+            setTimeout(() => {
+                this.uncoverClick(current.board[act.tile.x][act.tile.y])
+            }, this.pause);
+        }
+        
     }
     
     componentDidUpdate(){
-        if(this.state.step === 0) 
+
+        const history = this.state.history.slice();
+        const current = history[this.state.step];
+
+        if(this.RESTART){
             this.uncoverClick(this.state.start)
+            this.RESTART = false
+        }
+
+        if(this.state.aimode && !this.agent.active && this.agentAct !== 'LEAVE'){
+            alert('ai restart')
+            this.agent.setup(current)
+        }
+
+        // ai mode
+        if(this.state.aimode && this.agent.active){
+
+            let act
+            if(this.agentAct == 'FLAG'){
+                act = this.agent.getAction(-1)
+            }
+            else{
+                act = this.agent.getAction(current.board[this.agentX][this.agentY].number)
+            }
+
+            this.agentAct = act.action
+            this.agentX = act.tile.x
+            this.agentY = act.tile.y
+
+            setTimeout(() => {
+                if(act.action == 'UNCOVER'){
+                    this.uncoverClick(current.board[act.tile.x][act.tile.y])
+                }
+                else if(act.action == 'FLAG'){
+                    this.flagClick(current.board[act.tile.x][act.tile.y])
+                }
+                else{
+                    //alert(this.agent.actionQueue.length)
+                }
+            }, this.pause);
+        }
+
+        // manual mode
+        else{
+            if(this.state.step === 0) 
+                this.uncoverClick(this.state.start)
+        }
     }
 }
 
