@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Flag from './icon/flag.svg'
-import './App.css';
+import './Game.css';
 
 class Tile extends Component {  
 

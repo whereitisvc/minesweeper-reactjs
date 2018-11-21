@@ -22,8 +22,26 @@ class Tile{
 
     static neighbor(t1, t2){
         let dist = Math.abs(t1.x - t2.x) + Math.abs(t1.y - t2.y);
-        return dist <= 2
+        if(dist > 2) return false
+        else if(dist === 2){
+            let x = Math.abs(t1.x - t2.x)
+            let y = Math.abs(t1.y - t2.y)
+            if(x === 2 || y === 2) return false
+        }
+        return true
     }
+
+    static local(t1, t2){
+        let dist = Math.abs(t1.x - t2.x) + Math.abs(t1.y - t2.y);
+        if(dist > 3) return false
+        else if(dist === 3){
+            let x = Math.abs(t1.x - t2.x)
+            let y = Math.abs(t1.y - t2.y)
+            if(x === 3 || y === 3) return false
+        }
+        return true
+    }
+
 }
 
 class AI{
@@ -41,35 +59,28 @@ class AI{
     agentXY = new Tile(0, 0)
     last_action
 
+    CLOSE = false
+
     // list, set
     actionQueue = []
     zeroTiles = []
     edgeTiles = []
-
     history = []
+
+    // info props
+    info = {prob: -1, unexp_mines: -1, unexp_tiles: -1, edgeTiles: -1,
+            min: -1, min_tile: new Tile(-1, -1)}
 
     constructor(props){
         this.board = this.generateBoard(props.rows, props.cols)
         this.rows = props.rows
         this.cols = props.cols
-        this.remain_mines = props.remain_mines
+        this.remain_mines = props.mines
         this.remain_tiles = props.rows * props.cols - 1
 
-        // this.edgeTiles = new Set()
-        // this.history = new Set()
-
         this.last_action = 'UNCOVER'
-        this.agentXY = this.board[props.start.x][props.start.y] //.setXY(props.start.x, props.start.y)
+        this.agentXY = this.board[props.start.x][props.start.y]
         this.board[props.start.x][props.start.y].uncovered = true
-
-        // for(let i=0; i<this.rows; i++)
-        //     for(let j=0; j<this.cols; j++)
-        //         if(!this.board[i][j].uncover)
-        //             this.actionQueue.push({action: 'UNCOVER', x: i, y: j})
-
-        // let p1 = new Point(1,2)
-        // let p2 = new Point(1,2)
-        // if(Point.same(p1, p2)) alert('same')
         
         this.uncoverNeighbor(this.agentXY)
         
@@ -93,7 +104,66 @@ class AI{
     }
 
     setup(current){
+        this.rows = current.board.length
+        this.cols = current.board[0].length
+        this.board = this.generateBoard(this.rows, this.cols)
+        this.remain_mines = current.flag
+        this.remain_tiles = current.cover + current.flag
+        this.active = true
 
+        this.actionQueue = []
+        this.zeroTiles = []
+        this.edgeTiles = []
+        this.history = []
+        this.CLOSE = false
+        this.last_action = 'DUMMY'
+
+        let rows = this.rows
+        let cols = this.cols
+        for(let i=0; i<rows; i++){
+            for(let j=0; j<cols; j++){
+                let ctile = current.board[i][j]
+                if(!ctile.flag && !ctile.uncover) continue
+                if(ctile.flag){
+                    this.remain_tiles--
+                    this.remain_mines--
+                    this.board[i][j].flag = true
+                    this.board[i][j].number = ctile.number
+                    this.board[i][j].visited = true
+                    this.history.push(this.board[i][j])
+                }
+                else{
+                    if(inEdge(i, j)){
+                        if(ctile.number === 0) this.zeroTiles.push(this.board[i][j])
+                        else this.edgeTiles.push(this.board[i][j])
+                    }
+                    this.remain_tiles--
+                    this.board[i][j].uncovered = true
+                    this.board[i][j].number = ctile.number
+                    this.history.push(this.board[i][j])
+                }
+            }
+        }
+
+        function inEdge(i, j){
+            for(let k=0; k<DIR.length; k++){
+                let ni = i + DIR[k][0]
+                let nj = j + DIR[k][1]
+                if(inBound(ni, nj)){
+                    let ctile = current.board[ni][nj]
+                    if(!ctile.uncovered && !ctile.flag) return true
+                }
+            }
+            return false
+        }
+
+        function inBound(r, c){
+            return ( 0 <= c && c < cols && 0 <= r && r < rows )
+        }
+    }
+
+    getInfo(){
+        return this.info
     }
 
     getAction(number){
@@ -155,7 +225,16 @@ class AI{
         if(this.actionQueue.length === 0){
             
             let segment = this.edgeTilesSegment()
-            //console.log(segment.length)
+
+            let acc = 0;
+            for(let i=0; i<segment.length; i++){
+                for(let j=0; j<segment[i].length; j++){
+                    acc++
+                }
+            }
+            if(acc !== this.edgeTiles.length){
+                alert('what 3')
+            }
 
             let mine_stat = new Map()
             let total_min = 0
@@ -165,7 +244,7 @@ class AI{
                 let configs = this.findMinesConfig(segment[i], props)
                 total_min += (props.min_mine === Number.MAX_VALUE) ? 0 : props.min_mine
 
-                if(configs.length === 0) alert('no config found')
+                if(configs.length === 0) ; //alert('no config found')
                 else if(configs.length === 1) this.setConfig(configs[0])
                 else{
                     // caculate the possibility of mine for each edge tile
@@ -178,8 +257,21 @@ class AI{
 
             // In this case, no 100% safe or 100% mine boundary tile. Make the best guess by probility
             if(this.actionQueue.length === 0){
-                //alert('edge tiles hard case')
-                this.bestGuessbyStat(mine_stat, total_min);
+
+                let correct = this.bestGuessbyStat(mine_stat, total_min, segment)
+                if(!correct){
+                    this.CLOSE = true
+                    let configs = this.findMinesConfig(this.edgeTiles, {min_mine: Number.MAX_VALUE})
+                    mine_stat = new Map()
+                    if(configs.length === 0) ; //alert('no config found')
+                    else if(configs.length === 1) this.setConfig(configs[0])
+                    else{
+                        this.caculateMineStat(mine_stat, configs);
+                        this.act2SafeTilebyStat(mine_stat);
+                    }
+                    if(this.actionQueue.length === 0) this.bestGuessbyStat(mine_stat, total_min, segment)
+                    this.CLOSE = false
+                }
             }
         }
 
@@ -188,14 +280,13 @@ class AI{
 
     unexplore(tile){
         if(tile.uncovered || tile.flag) return false
-        this.edgeTiles.forEach(t => {
-            if(Tile.neighbor(t, tile)) return false
-        })
+        for(let i=0; i<this.edgeTiles.length; i++)
+            if(Tile.neighbor(this.edgeTiles[i], tile)) return false
         return true
     }
 
-    bestGuessbyStat(mine_stat, total_min){
-        //if(mine_stat.size === 0) return
+    bestGuessbyStat(mine_stat, total_min, seg){
+        // get the bound tile with smallest prob
         let min = Number.MAX_VALUE
         let min_tile
         mine_stat.forEach( (prob, tile) => {
@@ -205,8 +296,15 @@ class AI{
             }
         })
 
+        // closing game
+        if(this.CLOSE){
+            if(mine_stat > 0) this.actionQueue.push({action: 'UNCOVER', tile: min_tile})
+            return true
+        }
+
+        // caculate the unexplored area
         let unexp_mines = this.remain_mines - total_min; // the largest number of mines in unexplored area
-        let unexp_tiles = []; // the number of tiles in unexplored area
+        let unexp_tiles = []; // the tiles in unexplored area
         for(let i=0; i<this.rows; i++){
             for(let j=0; j<this.cols; j++){
                 if(this.unexplore(this.board[i][j])){
@@ -214,25 +312,77 @@ class AI{
                 }
             }
         }
+        console.log(unexp_tiles)
+
+        // game is finished
+        if(mine_stat.size === 0 && unexp_tiles.length === 0) return true
+
+        // this is the special case when closing to the end of game
+        if(unexp_tiles.length === 0 && unexp_mines > 0){
+            alert('what4')
+            return false
+        }
+
+        // all unexplore tile is for sure
+        if(unexp_tiles.length > 0){
+            if(unexp_mines === 0){
+                unexp_tiles.forEach(t => {
+                    this.actionQueue.push({action: 'UNCOVER', tile: t})
+                })
+                return true
+            }
+            if(unexp_tiles.length === unexp_mines){
+                unexp_tiles.forEach(t => {
+                    this.actionQueue.push({action: 'FLAG', tile: t})
+                })
+                return true
+            }
+        }
+
+        // no unexplored tile
+        if(unexp_tiles.length === 0){
+            this.actionQueue.push({action: 'UNCOVER', tile: min_tile})
+            return true
+        }
+
+        if(mine_stat.size === 0){
+            alert('what5')
+            let ri = Math.floor(Math.random() * unexp_tiles.length)
+            this.actionQueue.push({action: 'UNCOVER', tile: unexp_tiles[ri]});
+            return false
+        }
 
         // unexplored area  vs  explored area
-        if(mine_stat.size === 0 && unexp_tiles.length === 0) return
-        let prob = (unexp_tiles.length === 0) ? 1.0 : unexp_mines / unexp_tiles.length;
-        //console.log('min = ' + min + ', ' + toString(min_tile.x) + ', ' + toString(min_tile.y))
-        //console.log('rand = '+ prob)
+        let prob = unexp_mines / unexp_tiles.length
+
+        // info
+        this.info.prob = prob
+        this.info.unexp_mines = unexp_mines
+        this.info.unexp_tiles = unexp_tiles.length
+        this.info.edgeTiles = this.edgeTiles.length
+        this.info.min = min
+        this.info.min_tile = min_tile
+
+        if(prob < 0){
+            console.log(seg.length)
+            alert('what')
+        }
+
         if(min <= prob){
             this.actionQueue.push({action: 'UNCOVER', tile: min_tile});
         }
         else{
             let ri = Math.floor(Math.random() * unexp_tiles.length)
-            this.actionQueue.push({action: 'UNCOVER', tile: unexp_tiles[ri]});
+            this.actionQueue.push({action: 'UNCOVER', tile: unexp_tiles[ri]})
         }
+
+        return true
     }
 
     act2SafeTilebyStat(mine_stat){
-        mine_stat.forEach((tile, possbility) => {
-            if(possbility == 0.0) this.actionQueue.push({action: 'UNCOVER', tile: tile})
-            if(possbility == 1.0) this.actionQueue.push({action: 'FLAG', tile: tile})
+        mine_stat.forEach((possbility, tile) => {
+            if(possbility == 0) this.actionQueue.push({action: 'UNCOVER', tile: tile})
+            if(possbility == 1) this.actionQueue.push({action: 'FLAG', tile: tile})
         })
     }
 
@@ -244,20 +394,28 @@ class AI{
                 if(act.action == 'FLAG'){
                     let val = mine_stat.get(act.tile)
                     mine_stat.set(act.tile, val+1)
-                    possible_tiles.push(act.tile)
+                    
+                    let idx = possible_tiles.indexOf(act.tile)
+                    if(idx === -1) possible_tiles.push(act.tile)
                 }
             })
         }
 
-        possible_tiles.forEach(t => {
+        for(let i=0; i<possible_tiles.length; i++){
+            let t = possible_tiles[i]
             let val = mine_stat.get(t)
-            mine_stat.set(t, val/configs.length)
-        })
+            let prob = val/configs.length
+            if(prob > 0 && prob < 1e-17){
+                alert('what2')
+            }
+            mine_stat.set(t, prob)
+        }
     }
 
     dfsMines(configs, config, area, props, index, flagged){
         if(flagged > this.remain_mines) return
         if(index === area.length){
+            if(config.length > 0 && this.CLOSE && flagged !== this.remain_mines) return
             if(config.length > 0) {
                 configs.push(config.slice());
 
@@ -339,6 +497,7 @@ class AI{
     }
 
     edgeTilesSegment(){
+        if(this.edgeTiles.length === 0) return []
 
         let mapIdx = Array(this.edgeTiles.length)
         for(let i=0; i<this.edgeTiles.length; i++) mapIdx[i] = i
@@ -346,20 +505,15 @@ class AI{
         let parent = Array(mapIdx.length)
         for(let i=0; i<mapIdx.length; i++) parent[i] = i
 
-        for(let i=0; i<mapIdx.length; i++){
+        for(let i=0; i<mapIdx.length-1; i++){
             for(let j=i+1; j<mapIdx.length; j++){
                 if(i === j) continue 
-                if( Tile.neighbor(this.edgeTiles[i], this.edgeTiles[j]) ){
-                    let root1 = i
-                    let root2 = j
-                    while(root1 !== parent[root1]) root1 = parent[root1]
-                    while(root2 !== parent[root2]) root2 = parent[root2]
+                if( Tile.local(this.edgeTiles[i], this.edgeTiles[j]) ){
 
                     // merge two set
-                    if(root1 !== root2){
-                        if(root1 < root2) parent[j] = root1
-                        else parent[j] = root2
-                    }
+                    if(parent[i] < parent[j]) parent[j] = parent[i];
+                    else parent[i] = parent[j];
+                    
                 }
             }
         }
@@ -371,7 +525,7 @@ class AI{
             if(!groups.has(root)){
                 groups.set(root, [i])
             }
-            else{
+            else{ // need to check if map.get().push() work!
                 groups.get(root).push(i)
             }
         }

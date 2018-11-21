@@ -9,7 +9,7 @@ import Board from './Board.js'
 import New from './icon/New.svg'
 import Undo from './icon/Undo.svg'
 import Redo from './icon/Redo.svg'
-import './App.css';
+import './Game.css';
 
 const DIR = [     [-1, 1], [-1, 0], [-1, -1],
                     [0, 1],          [0, -1],
@@ -17,7 +17,7 @@ const DIR = [     [-1, 1], [-1, 0], [-1, -1],
 
 class Game extends Component {
 
-    pause = 50
+    pause = 10
 
     agent
     agentX = 0
@@ -30,14 +30,14 @@ class Game extends Component {
         super(props)
         let rows = 16
         let cols = 16
-        let mines = 40   
+        let mines = 40 
 
         let start = this.generateBoard(rows, cols, mines)
 
         this.state = {
             history: [{
                 flag: mines,
-                cover: rows*cols,
+                cover: rows*cols-mines,
                 board: start.board,
                 gameover: false,
             }],
@@ -100,9 +100,36 @@ class Game extends Component {
     }
 
     aitoggle(){
-        let mode = this.state.aimode
-        if(mode && this.agent.active) this.agent.active = false
-        this.setState({aimode: !mode})
+        const history = this.state.history.slice();
+        const current = history[this.state.step];
+
+        let aimode = this.state.aimode
+        if(!current.gameover){ 
+            this.agent.active = !this.agent.active 
+            
+            //alert('ai start')
+            this.agent.setup(current)
+            let act = this.agent.getAction(-1)
+            
+            this.agentAct = act.action
+            this.agentX = act.tile.x
+            this.agentY = act.tile.y
+
+            setTimeout(() => {
+                if(act.action == 'UNCOVER'){
+                    this.uncoverClick(current.board[act.tile.x][act.tile.y])
+                }
+                else if(act.action == 'FLAG'){
+                    this.flagClick(current.board[act.tile.x][act.tile.y])
+                }
+                else{
+                    //alert(this.agent.actionQueue.length)
+                }
+            }, this.pause);
+
+        }
+
+        this.setState({aimode: !aimode})
     }
 
     undo(){
@@ -129,7 +156,7 @@ class Game extends Component {
 
         this.setState({history: [{
                             flag: mines,
-                            cover: rows*cols,
+                            cover: rows*cols-mines,
                             board: start.board,
                             gameover: false,
                         }],
@@ -160,6 +187,7 @@ class Game extends Component {
         next.cover--
 
         if(tile.mine){
+            //alert('BOOOOM!')
             next.gameover = true
         }
         else if(tile.number === 0 && !this.state.aimode){
@@ -179,7 +207,6 @@ class Game extends Component {
         if(tile.flag){
             next.board[tile.x][tile.y].flag = false
             next.flag++
-            next.cover++
         }
         else{
             if(next.flag === 0){
@@ -188,7 +215,6 @@ class Game extends Component {
             }
             next.board[tile.x][tile.y].flag = true
             next.flag--
-            next.cover--
         }
         
         this.actionCenter(next)
@@ -198,26 +224,12 @@ class Game extends Component {
         let step = this.state.step;
         let history = this.state.history.slice();
 
-        if(next.gameover){
-            alert('BOOOOM!')
-            this.agent.active = false
-            // next.flag = 0
-            // for(let i=0; i<this.state.rows; i++){
-            //     for(let j=0; j<this.state.cols; j++){
-            //         let t = next.board[i][j]
-            //         if(!t.uncover){
-            //             if(!t.flag) t.uncover = true
-            //             else if(!t.mine){
-            //                 t.flag = false
-            //                 t.uncover = true
-            //             }
-            //         }
-            //     }
-            // }
-        }
+        // win game
+        if(next.flag === 0 && next.cover === 0) next.gameover = true;
 
-        if(next.cover === 0 && next.flag === 0){
-            alert('You win !')
+        if(next.gameover){
+            //alert('game over')
+            
         }
 
         // update history stream
@@ -229,6 +241,28 @@ class Game extends Component {
         
         // set state
         this.setState({history: history, step: ++step});
+    }
+
+    openBoard(){
+        const step = this.state.step
+        const history = this.state.history.slice()
+        let next = JSON.parse(JSON.stringify(history[step]))
+
+        next.flag = 0
+        for(let i=0; i<this.state.rows; i++){
+            for(let j=0; j<this.state.cols; j++){
+                let t = next.board[i][j]
+                if(!t.uncover){
+                    if(!t.flag) t.uncover = true
+                    else if(!t.mine){
+                        t.flag = false
+                        t.uncover = true
+                    }
+                }
+            }
+        }
+
+        this.actionCenter(next)
     }
 
     dfsUncover(next, tile){
@@ -253,11 +287,14 @@ class Game extends Component {
     render() {
         const history = this.state.history.slice();
         const current = history[this.state.step];
+        let active = true
+        if(this.state.aimode && this.agent.active) active = false
         return (
             <div className = "Game">
                 <Control  undo = {this.undo} redo = {this.redo} restart = {this.restart} flags_left = {current.flag}
-                            aimode = {this.state.aimode} toggle = {this.aitoggle} />
+                            aimode = {this.state.aimode} toggle = {this.aitoggle} active = {active}/>
                 <Board value = {current.board} uncov_callback = {this.uncoverClick} flag_callback = {this.flagClick}/>
+                <AIinfo value = {this.agent.info}/>
             </div>
         )
     }
@@ -289,13 +326,8 @@ class Game extends Component {
             this.RESTART = false
         }
 
-        if(this.state.aimode && !this.agent.active && this.agentAct !== 'LEAVE'){
-            alert('ai restart')
-            this.agent.setup(current)
-        }
-
         // ai mode
-        if(this.state.aimode && this.agent.active){
+        if(this.agent.active){
 
             let act
             if(this.agentAct == 'FLAG'){
@@ -327,26 +359,43 @@ class Game extends Component {
             if(this.state.step === 0) 
                 this.uncoverClick(this.state.start)
         }
+
+        if(current.gameover) ;//alert('BOOOOOOM!')
+        if(current.cover === 0 && current.flag === 0) ;//alert('You win !')
     }
 }
 
 class Control extends Component {
     render() {
+        let active = this.props.active
         return (
             <div className = "Control">  
                     <div>
-                        <Toggle label="AI" checked={this.props.aimode} onToggle={this.props.toggle} />
+                        <Toggle label="AI" checked={this.props.aimode} onToggle={this.props.toggle} disabled = {!active}/>
                     </div>    
                     <div>
                         <ButtonGroup>
-                        <Button onClick = {this.props.restart} > <img src={New} /> </Button>
-                        <Button onClick = {this.props.undo} > <img src={Undo} />  </Button>
-                        <Button onClick = {this.props.redo} > <img src={Redo} />  </Button>
+                        <Button onClick = {this.props.restart} disabled = {!active}> <img src={New} /> </Button>
+                        <Button onClick = {this.props.undo} disabled = {!active}> <img src={Undo} />  </Button>
+                        <Button onClick = {this.props.redo} disabled = {!active}> <img src={Redo} />  </Button>
                         </ButtonGroup>
                     </div>
                     <div>
                         Mines: {this.props.flags_left}
                     </div>
+            </div>
+        )
+    }
+}
+
+class AIinfo extends Component {
+    render() {
+        let info = this.props.value
+        return (
+            <div>
+                <p>prob = {info.prob}, unexp_mines = {info.unexp_mines}, unexp_tiles = {info.unexp_tiles}</p>
+                <p>edgeTiles = {info.edgeTiles}</p>
+                <p>min = {info.min}, ({info.min_tile.x}, {info.min_tile.y})</p>
             </div>
         )
     }
