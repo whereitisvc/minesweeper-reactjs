@@ -67,6 +67,8 @@ class AI{
     edgeTiles = []
     history = []
 
+    CLOSE_GAME_THRESHOLD = 7
+
     // info props
     info = {prob: -1, unexp_mines: -1, unexp_tiles: -1, edgeTiles: -1,
             min: -1, min_tile: new Tile(-1, -1)}
@@ -109,6 +111,7 @@ class AI{
         this.board = this.generateBoard(this.rows, this.cols)
         this.remain_mines = current.flag
         this.remain_tiles = current.cover + current.flag
+
         this.active = true
 
         this.actionQueue = []
@@ -120,13 +123,28 @@ class AI{
 
         let rows = this.rows
         let cols = this.cols
+
+        function inEdge(i, j){
+            for(let k=0; k<DIR.length; k++){
+                let ni = i + DIR[k][0]
+                let nj = j + DIR[k][1]
+                if(inBound(ni, nj)){
+                    let ctile = current.board[ni][nj]
+                    if(!ctile.uncover && !ctile.flag) return true
+                }
+            }
+            return false
+        }
+
+        function inBound(r, c){
+            return ( 0 <= c && c < cols && 0 <= r && r < rows )
+        }
+
         for(let i=0; i<rows; i++){
             for(let j=0; j<cols; j++){
                 let ctile = current.board[i][j]
                 if(!ctile.flag && !ctile.uncover) continue
                 if(ctile.flag){
-                    this.remain_tiles--
-                    this.remain_mines--
                     this.board[i][j].flag = true
                     this.board[i][j].number = ctile.number
                     this.board[i][j].visited = true
@@ -137,28 +155,11 @@ class AI{
                         if(ctile.number === 0) this.zeroTiles.push(this.board[i][j])
                         else this.edgeTiles.push(this.board[i][j])
                     }
-                    this.remain_tiles--
                     this.board[i][j].uncovered = true
                     this.board[i][j].number = ctile.number
                     this.history.push(this.board[i][j])
                 }
             }
-        }
-
-        function inEdge(i, j){
-            for(let k=0; k<DIR.length; k++){
-                let ni = i + DIR[k][0]
-                let nj = j + DIR[k][1]
-                if(inBound(ni, nj)){
-                    let ctile = current.board[ni][nj]
-                    if(!ctile.uncovered && !ctile.flag) return true
-                }
-            }
-            return false
-        }
-
-        function inBound(r, c){
-            return ( 0 <= c && c < cols && 0 <= r && r < rows )
         }
     }
 
@@ -168,8 +169,12 @@ class AI{
 
     getAction(number){
 
-        /*********  precept the response from the environment *************/
-        if(this.last_action == 'UNCOVER' && !this.agentXY.uncovered){
+        if(this.CLOSE){
+            console.log('closee')
+        }
+
+        /*********  precept the response from the environment *************/ 
+        if(this.last_action === 'UNCOVER' && !this.agentXY.uncovered){
             if(number === -1){ 
                 this.active = false
                 return {action: 'LEAVE', tile: this.agentXY}
@@ -181,7 +186,7 @@ class AI{
             else this.edgeTiles.push(this.agentXY)
         }
 
-        if(this.last_action == 'FLAG' && !this.agentXY.flag){
+        if(this.last_action === 'FLAG' && !this.agentXY.flag){
             this.remain_tiles--
             this.remain_mines--
             this.agentXY.flag = true
@@ -192,7 +197,6 @@ class AI{
         /*********  ai *************/
         // in case doing the same action multiple times
         while( this.actionQueue.length > 0 && this.history.indexOf(this.actionQueue[0].tile) > -1 ){
-            //alert('duplicate')
             this.actionQueue.splice(0, 1)
         }
 
@@ -224,17 +228,9 @@ class AI{
         // Caculate all the configurations and make the best decision
         if(this.actionQueue.length === 0){
             
-            let segment = this.edgeTilesSegment()
-
-            let acc = 0;
-            for(let i=0; i<segment.length; i++){
-                for(let j=0; j<segment[i].length; j++){
-                    acc++
-                }
-            }
-            if(acc !== this.edgeTiles.length){
-                alert('what 3')
-            }
+            let segment = []
+            if(this.CLOSE) segment.push(this.edgeTiles)
+            else segment = this.edgeTilesSegment()
 
             let mine_stat = new Map()
             let total_min = 0
@@ -261,16 +257,8 @@ class AI{
                 let correct = this.bestGuessbyStat(mine_stat, total_min, segment)
                 if(!correct){
                     this.CLOSE = true
-                    let configs = this.findMinesConfig(this.edgeTiles, {min_mine: Number.MAX_VALUE})
-                    mine_stat = new Map()
-                    if(configs.length === 0) ; //alert('no config found')
-                    else if(configs.length === 1) this.setConfig(configs[0])
-                    else{
-                        this.caculateMineStat(mine_stat, configs);
-                        this.act2SafeTilebyStat(mine_stat);
-                    }
-                    if(this.actionQueue.length === 0) this.bestGuessbyStat(mine_stat, total_min, segment)
-                    this.CLOSE = false
+                    this.last_action = 'DUMMY'
+                    return this.getAction(-1)
                 }
             }
         }
@@ -286,6 +274,11 @@ class AI{
     }
 
     bestGuessbyStat(mine_stat, total_min, seg){
+
+        if(this.CLOSE){
+            console.log('close')
+        }
+
         // get the bound tile with smallest prob
         let min = Number.MAX_VALUE
         let min_tile
@@ -298,7 +291,8 @@ class AI{
 
         // closing game
         if(this.CLOSE){
-            if(mine_stat > 0) this.actionQueue.push({action: 'UNCOVER', tile: min_tile})
+            if(mine_stat.size > 0) this.actionQueue.push({action: 'UNCOVER', tile: min_tile})
+            console.log('wait')
             return true
         }
 
@@ -312,44 +306,36 @@ class AI{
                 }
             }
         }
-        console.log(unexp_tiles)
 
         // game is finished
         if(mine_stat.size === 0 && unexp_tiles.length === 0) return true
 
-        // this is the special case when closing to the end of game
-        if(unexp_tiles.length === 0 && unexp_mines > 0){
-            alert('what4')
+        // no unexplored tile anymore, close game strategy
+        if(unexp_tiles.length === 0){
+            alert('closing game, total_min = ' + total_min )
             return false
         }
 
-        // all unexplore tile is for sure
-        if(unexp_tiles.length > 0){
-            if(unexp_mines === 0){
-                unexp_tiles.forEach(t => {
-                    this.actionQueue.push({action: 'UNCOVER', tile: t})
-                })
-                return true
-            }
-            if(unexp_tiles.length === unexp_mines){
-                unexp_tiles.forEach(t => {
-                    this.actionQueue.push({action: 'FLAG', tile: t})
-                })
-                return true
-            }
-        }
-
-        // no unexplored tile
-        if(unexp_tiles.length === 0){
-            this.actionQueue.push({action: 'UNCOVER', tile: min_tile})
+        // all unexplore tile is for sure       
+        if(unexp_mines === 0){
+            unexp_tiles.forEach(t => {
+                this.actionQueue.push({action: 'UNCOVER', tile: t})
+            })
             return true
         }
+        if(unexp_tiles.length === unexp_mines){
+            unexp_tiles.forEach(t => {
+                this.actionQueue.push({action: 'FLAG', tile: t})
+            })
+            return true
+        }      
 
+        // no edge tile
         if(mine_stat.size === 0){
-            alert('what5')
+            alert('no edge tiles')
             let ri = Math.floor(Math.random() * unexp_tiles.length)
             this.actionQueue.push({action: 'UNCOVER', tile: unexp_tiles[ri]});
-            return false
+            return true
         }
 
         // unexplored area  vs  explored area
@@ -365,7 +351,7 @@ class AI{
 
         if(prob < 0){
             console.log(seg.length)
-            alert('what')
+            alert('prob < 0')
         }
 
         if(min <= prob){
@@ -405,9 +391,6 @@ class AI{
             let t = possible_tiles[i]
             let val = mine_stat.get(t)
             let prob = val/configs.length
-            if(prob > 0 && prob < 1e-17){
-                alert('what2')
-            }
             mine_stat.set(t, prob)
         }
     }

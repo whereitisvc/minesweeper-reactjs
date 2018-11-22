@@ -16,7 +16,7 @@ class Tile extends Component {
         const colors = ["blue", "green", "red", "#000099", "brown", "#00e6e6n", "black", "grey"]
         let style = {}
         if(tile.uncover && tile.number > 0){
-            style = {color: colors[tile.number-1], background: "rgb(170,145,145)"}
+            style = {color: colors[tile.number-1], background: "#ffb3b3"}
         }
 
         let tile_class = "Tile"

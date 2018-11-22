@@ -1,4 +1,71 @@
+
+
 .section-game {
-  padding-top: 100px;
+  padding-top: 30px;
   text-align: center;
+  font-family: "Avenir Next","HelveticaNeue","Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-weight: 50;
 }
+
+:root {
+  --off-white: #fafafa;
+}
+.nav {
+  background-color: var(--off-white);
+  position: sticky;
+  top: 0px;
+  width: 100%;
+  height: 80px;
+  z-index: 1000;
+  opacity: 0.85;
+  box-shadow: 0 4px 14px 0 rgba(126, 125, 125, 0.15);
+}
+
+.nav-logo {
+  height: 60px;
+  width: 60px;
+}
+
+.nav-logo:hover {
+  cursor: pointer;
+}
+
+.nav .nav-content {
+  max-width: 900px;
+  padding: 0rem 3rem;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+}
+
+.nav-item {
+  /* display: inline-block;
+  vertical-align: middle;
+  margin-top: 1rem; */
+  display: inline-block;
+  margin-top: 1rem;
+  margin-left: 2rem;
+  color: #333;
+}
+
+.nav-item:hover {
+  color: black;
+  cursor: pointer;
+}
+
+.section {
+}
+
+.section-dark {
+  background: #333;
+  color: white;
+}
+
+.section-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px;
+}
+
