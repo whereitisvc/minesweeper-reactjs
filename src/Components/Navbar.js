@@ -11,12 +11,15 @@ export default class Navbar extends Component {
     return (
       <nav className="nav" id="navbar">
         <div className="nav-content">
-          <img
-            src={logo}
-            className="nav-logo"
-            alt="Logo"
-            onClick={this.scrollToTop}
-          />
+          <div className = 'title'>
+            <img
+              src={logo}
+              className="nav-logo"
+              alt="Logo"
+              onClick={this.scrollToTop}
+            />
+            MINESWEEPER.ai
+          </div>
           <ul className="nav-items">
             <li className="nav-item">
               <Link
@@ -27,7 +30,7 @@ export default class Navbar extends Component {
                 offset={-70}
                 duration={500}
               >
-                Section 1
+                Game
               </Link>
             </li>
             <li className="nav-item">
@@ -39,7 +42,7 @@ export default class Navbar extends Component {
                 offset={-70}
                 duration={500}
               >
-                Section 2
+                Description
               </Link>
             </li>
             <li className="nav-item">
@@ -51,7 +54,7 @@ export default class Navbar extends Component {
                 offset={-70}
                 duration={500}
               >
-                Section 3
+                Credit
               </Link>
             </li>
            

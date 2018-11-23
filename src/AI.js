@@ -61,17 +61,15 @@ class AI{
 
     CLOSE = false
 
-    // list, set
+    // list
     actionQueue = []
     zeroTiles = []
     edgeTiles = []
     history = []
 
-    CLOSE_GAME_THRESHOLD = 7
-
     // info props
-    info = {prob: -1, unexp_mines: -1, unexp_tiles: -1, edgeTiles: -1,
-            min: -1, min_tile: new Tile(-1, -1)}
+    // info = {prob: -1, unexp_mines: -1, unexp_tiles: -1, edgeTiles: -1,
+    //         min: -1, min_tile: new Tile(-1, -1)}
 
     constructor(props){
         this.board = this.generateBoard(props.rows, props.cols)
@@ -169,10 +167,6 @@ class AI{
 
     getAction(number){
 
-        if(this.CLOSE){
-            console.log('closee')
-        }
-
         /*********  precept the response from the environment *************/ 
         if(this.last_action === 'UNCOVER' && !this.agentXY.uncovered){
             if(number === -1){ 
@@ -221,11 +215,10 @@ class AI{
                 if(idx > -1) 
                     this.edgeTiles.splice(idx, 1)
             })
-            //console.log(this.actionQueue)
         }
 
         
-        // Caculate all the configurations and make the best decision
+        //Caculate all the configurations and make the best decision
         if(this.actionQueue.length === 0){
             
             let segment = []
@@ -249,12 +242,13 @@ class AI{
                     // check if have any 100% sure tile
                     this.act2SafeTilebyStat(mine_stat);
                 }
+
             }
 
             // In this case, no 100% safe or 100% mine boundary tile. Make the best guess by probility
             if(this.actionQueue.length === 0){
 
-                let correct = this.bestGuessbyStat(mine_stat, total_min, segment)
+                let correct = this.bestGuessbyStat(mine_stat, total_min)
                 if(!correct){
                     this.CLOSE = true
                     this.last_action = 'DUMMY'
@@ -273,11 +267,7 @@ class AI{
         return true
     }
 
-    bestGuessbyStat(mine_stat, total_min, seg){
-
-        if(this.CLOSE){
-            console.log('close')
-        }
+    bestGuessbyStat(mine_stat, total_min){
 
         // get the bound tile with smallest prob
         let min = Number.MAX_VALUE
@@ -292,7 +282,6 @@ class AI{
         // closing game
         if(this.CLOSE){
             if(mine_stat.size > 0) this.actionQueue.push({action: 'UNCOVER', tile: min_tile})
-            console.log('wait')
             return true
         }
 
@@ -312,7 +301,7 @@ class AI{
 
         // no unexplored tile anymore, close game strategy
         if(unexp_tiles.length === 0){
-            alert('closing game, total_min = ' + total_min )
+            //alert('closing game, total_min = ' + total_min )
             return false
         }
 
@@ -330,9 +319,8 @@ class AI{
             return true
         }      
 
-        // no edge tile
+        // no edge tile (?)
         if(mine_stat.size === 0){
-            alert('no edge tiles')
             let ri = Math.floor(Math.random() * unexp_tiles.length)
             this.actionQueue.push({action: 'UNCOVER', tile: unexp_tiles[ri]});
             return true
@@ -341,17 +329,8 @@ class AI{
         // unexplored area  vs  explored area
         let prob = unexp_mines / unexp_tiles.length
 
-        // info
-        this.info.prob = prob
-        this.info.unexp_mines = unexp_mines
-        this.info.unexp_tiles = unexp_tiles.length
-        this.info.edgeTiles = this.edgeTiles.length
-        this.info.min = min
-        this.info.min_tile = min_tile
-
         if(prob < 0){
-            console.log(seg.length)
-            alert('prob < 0')
+            alert('remain mines = ' + String(this.remain_mines) + ', total_min = ' + String(total_min))
         }
 
         if(min <= prob){
@@ -468,7 +447,6 @@ class AI{
     findMinesConfig(area, props){
         let configs = [];
         let config = [];
-        //vector<pair<int, int>> edgTiles (area.begin(), area.end());
         this.dfsMines(configs, config, area, props, 0, 0);
         return configs;
     }
@@ -524,24 +502,7 @@ class AI{
         }
         
         return segment
-        
 
-        // let segment = []
-        // this.edgeTiles.forEach( tile => {
-        //     let found = false;
-        //     for(let i=0; i<segment.length; i++){
-        //         for(let j=0; j<segment[i].length; j++){
-        //             if(Tile.neighbor(tile, segment[i][j])){ 
-        //                 segment[i].push(tile);
-        //                 found = true;
-        //                 break;
-        //             }
-        //         }
-        //         if(found) break;
-        //     }
-        //     if(!found) segment.push([tile]);
-        // })
-        // return segment
     }
 
     checkBoundTiles(tile){

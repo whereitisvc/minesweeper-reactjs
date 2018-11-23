@@ -1,10 +1,12 @@
 
 
 .section-game {
-  padding-top: 30px;
+  background: rgb(255, 255, 255);
+  padding-top: 70px;
   text-align: center;
   font-family: "Avenir Next","HelveticaNeue","Helvetica Neue",Helvetica,Arial,sans-serif;
   font-weight: 50;
+  padding-bottom: 40px;
 }
 
 :root {
@@ -24,6 +26,11 @@
 .nav-logo {
   height: 60px;
   width: 60px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 600;
 }
 
 .nav-logo:hover {
@@ -56,6 +63,7 @@
 }
 
 .section {
+  background: #ffffff;
 }
 
 .section-dark {
@@ -67,5 +75,21 @@
   max-width: 800px;
   margin: 0 auto;
   padding: 40px;
+  font-size: 18px;
+}
+
+.section img {
+  display: block;
+  margin: 10px auto;
+}
+
+.img-block{
+  display: flex;
+  justify-content: center;
+}
+
+.img-block img{
+  display: inline-block;
+  text-align: left;
 }
 

@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
-import {Button, ButtonGroup, ButtonToolbar} from 'react-bootstrap/lib'
-import {ToggleButton, ToggleButtonGroup} from 'react-bootstrap/lib'
 
 import AI from './AI.js'
-import Board from './Board.js'
-import Control from './Control.js'
+import Board from './Components/Board.js'
+import Control from './Components/Control.js'
 import './Game.css';
 
 const DIR = [     [-1, 1], [-1, 0], [-1, -1],
@@ -379,17 +377,17 @@ class Game extends Component {
     }
 }
 
-class AIinfo extends Component {
-    render() {
-        let info = this.props.value
-        return (
-            <div>
-                <p>prob = {info.prob}, unexp_mines = {info.unexp_mines}, unexp_tiles = {info.unexp_tiles}</p>
-                <p>edgeTiles = {info.edgeTiles}</p>
-                <p>min = {info.min}, ({info.min_tile.x}, {info.min_tile.y})</p>
-            </div>
-        )
-    }
-}
+// class AIinfo extends Component {
+//     render() {
+//         let info = this.props.value
+//         return (
+//             <div>
+//                 <p>prob = {info.prob}, unexp_mines = {info.unexp_mines}, unexp_tiles = {info.unexp_tiles}</p>
+//                 <p>edgeTiles = {info.edgeTiles}</p>
+//                 <p>min = {info.min}, ({info.min_tile.x}, {info.min_tile.y})</p>
+//             </div>
+//         )
+//     }
+// }
 
 export default Game;

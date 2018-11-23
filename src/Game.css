@@ -75,12 +75,13 @@
 }
 
 .mine{
-  background-color: rgb(255, 238, 81);
+  background-color: #ff6666;
   color: rgb(0, 0, 0);
 }
 
 .flag{
   height: 2vmin;
+  margin-top: 0px;
 }
 
 .game-status{

@@ -3,13 +3,11 @@ import Toggle from "react-toggle-component"
 import "react-toggle-component/styles.css"
 import {Button, ButtonGroup, ButtonToolbar} from 'react-bootstrap/lib'
 import {ToggleButton, ToggleButtonGroup} from 'react-bootstrap/lib'
-import {Grid, Row, Col} from 'react-bootstrap/lib'
-//import {Grid, Row, Col} from 'react-bootstrap/lib'
 
 import New from './icon/New.svg'
 import Undo from './icon/Undo.svg'
 import Redo from './icon/Redo.svg'
-import './Game.css';
+import '../Game.css';
 {/* <Toggle label="AI" checked={this.props.aimode} onToggle={this.props.toggle} disabled = {!active}/> */}
 class Control extends Component {
     render() {
