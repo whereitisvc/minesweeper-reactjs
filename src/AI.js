@@ -330,7 +330,7 @@ class AI{
         let prob = unexp_mines / unexp_tiles.length
 
         if(prob < 0){
-            alert('remain mines = ' + String(this.remain_mines) + ', total_min = ' + String(total_min))
+            //alert('remain mines = ' + String(this.remain_mines) + ', total_min = ' + String(total_min))
         }
 
         if(min <= prob){
