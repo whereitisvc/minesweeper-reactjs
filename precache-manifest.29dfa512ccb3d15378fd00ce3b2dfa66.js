@@ -4,7 +4,7 @@ self.__precacheManifest = [
     "url": "/minesweeper-reactjs/static/media/stage2.05e18c7b.png"
   },
   {
-    "revision": "568944e9ed0570b2eb8e",
+    "revision": "ccfe6e3ee8b00165847e",
     "url": "/minesweeper-reactjs/static/css/main.cc4c67f7.chunk.css"
   },
   {
@@ -44,8 +44,8 @@ self.__precacheManifest = [
     "url": "/minesweeper-reactjs/static/media/term.20ecba2c.png"
   },
   {
-    "revision": "568944e9ed0570b2eb8e",
-    "url": "/minesweeper-reactjs/static/js/main.568944e9.chunk.js"
+    "revision": "ccfe6e3ee8b00165847e",
+    "url": "/minesweeper-reactjs/static/js/main.ccfe6e3e.chunk.js"
   },
   {
     "revision": "8e3fa3075704668d7b3600f35c77fc60",
@@ -84,7 +84,7 @@ self.__precacheManifest = [
     "url": "/minesweeper-reactjs/static/css/1.6626a50c.chunk.css"
   },
   {
-    "revision": "6cd115f7c778cf123bf61d3d29346c5c",
+    "revision": "39debf1ed70444b36d45d708f8a153bb",
     "url": "/minesweeper-reactjs/index.html"
   }
 ];
