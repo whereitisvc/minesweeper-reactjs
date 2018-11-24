@@ -98,8 +98,8 @@ class Game extends Component {
 
     level(level){
         if(level === 1){
-            this.rows = 10
-            this.cols = 10
+            this.rows = 8
+            this.cols = 8
             this.mines = 10
         }
         else if(level === 2){
