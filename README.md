@@ -1,6 +1,14 @@
 # Description
 
-This is a classic [Minesweeper](https://en.wikipedia.org/wiki/Minesweeper_(video_game)) game with an AI agent. You can turn on AI agent mode at any point in game, it will read the game board information and automatically solve it with smart game strategies applied. It has a decent successful rate:  87.4% in Easy level, 8 by 8 tiles with 10 mines, 84.7% in Medium level, 16 by 16 tiles with 40 mines, and 43.1% in Hard level, 16 by 30 tiles with 99 mines. The result is tested by 1000 random game boards in each level. All the project are coded in [React JS](https://reactjs.org/), you can check out the source code [here](https://github.com/whereitisvc/minesweeper-reactjs).
+This is a classic [Minesweeper](https://en.wikipedia.org/wiki/Minesweeper_(video_game)) game with an AI agent. You can turn on AI agent mode at any point in game, it will read the game board information and automatically solve it with smart game strategies applied. There are three different difficulties you can choose:
+
+- Easy: 8 by 8 tiles with 10 mines, AI agent can solve it with 87.4% successful rate.
+
+- Medium: 16 by 16 tiles with 40 mines, AI agent can solve it with 84.7% successful rate.
+
+- Hard: 16 by 30 tiles with 99 mines, AI agent can solve it with 43.1 successful rate.
+
+The successful rates are tested by 1000 random game boards in each difficulty. All the project are coded in [React JS](https://reactjs.org/), you can check out the source code [here](https://github.com/whereitisvc/minesweeper-reactjs).
 
 # How it works
 
