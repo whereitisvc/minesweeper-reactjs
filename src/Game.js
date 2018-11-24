@@ -37,7 +37,7 @@ class Game extends Component {
             }],
             step: 0,
             start: start.pos,
-            aimode: true,
+            aimode: false,
         }
 
         this.uncoverClick = this.uncoverClick.bind(this)
@@ -52,6 +52,7 @@ class Game extends Component {
         this.agentX = start.pos.x
         this.agentY = start.pos.y
         this.agentAct = 'UNCOVER'
+        this.agent.active = false;
     }
 
     generateBoard(){

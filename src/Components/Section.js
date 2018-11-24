@@ -1,5 +1,11 @@
 import React from "react";
 
+import Toggle from "react-toggle-component"
+import "react-toggle-component/styles.css"
+import {Button, ButtonGroup, ButtonToolbar} from 'react-bootstrap/lib'
+import {ToggleButton, ToggleButtonGroup} from 'react-bootstrap/lib'
+
+import AItoggle from "./demo/AI-toggle.png";
 import term from "./demo/term.png";
 import stage2 from "./demo/stage2.png";
 import stage3a from "./demo/stage3a.png";
@@ -19,11 +25,13 @@ export default function Section({ title, subtitle, dark, id }) {
   if(id === 'section2'){
     content = (<div>
     <p>This is a classic <a href="https://en.wikipedia.org/wiki/Minesweeper_(video_game)">Minesweeper</a> game 
-    with an AI agent. You can turn on AI agent mode at any point in game, it will read the game board information and 
-    automatically solve it with smart game strategies applied. It has a decent successful rate:  87.4% in Easy level, 
-    8 by 8 tiles with 10 mines, 84.7% in Medium level, 16 by 16 tiles with 40 mines, and 43.1% in Hard level, 16 by 30 
-    tiles with 99 mines. The result is tested by 1000 random game boards in each level. All the project are coded in 
-     <a href="https://reactjs.org/"> React JS</a>, you can check out the source code <a>here</a>.</p>
+    with an AI agent. You can turn on <div className="inline-component"><img src={AItoggle} width="70px"/></div> at any point in game, it will read the game board information and 
+    automatically solve it with smart game strategies applied. There are three different difficulty game you can choose:</p>
+    <p><Button>Easy</Button> : 8 by 8 tiles with 10 mines. AI agent can solve it with 87.4% successful rate</p>
+    <p><Button>Medium</Button> : 16 by 16 tiles with 40 mines. AI agent can solve it with 84.7% successful rate</p>
+    <p><Button>Hard</Button> : 16 by 30 tiles with 99 mines. AI agent can solve it with 43.1% successful rate</p>
+    <p>The successful rates are tested by 1000 random game boards in each level. All the project are coded in 
+     <a href="https://reactjs.org/"> React JS</a>, you can check out the source code <a href="https://github.com/whereitisvc/minesweeper-reactjs">here</a>.</p>
     
 
     <br/>
@@ -123,7 +131,7 @@ export default function Section({ title, subtitle, dark, id }) {
     I believe this project demonstrates decent result. Finally, the source code of the project is available on Github. 
     Please feel free to check it out:</p>
     <br/>
-    <a><img src={github} width="64px"/></a>
+    <a href="https://github.com/whereitisvc/minesweeper-reactjs"><img src={github} width="64px"/></a>
     <br/>
     <br/>
     <br/>

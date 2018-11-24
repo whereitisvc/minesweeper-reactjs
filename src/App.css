@@ -96,3 +96,17 @@
   text-align: left;
 }
 
+.check-it-out{
+  width: 750px;
+  display: inline-block;
+  text-align: left;
+  font-weight: 500;
+}
+
+.inline-component{
+  /* background-color: #333; */
+  display: inline-block;
+  /* vertical-align: middle; */
+  height: 40px;
+}
+
