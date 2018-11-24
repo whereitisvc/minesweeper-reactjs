@@ -28,7 +28,7 @@ class Tile extends Component {
                 style={style}
                 onContextMenu={preventDefault} 
                 onMouseDown = {handleClick} >
-                    {(tile.flag) ? <img src={Flag} className="flag" alt="logo" /> : undefined }
+                    {(tile.flag) ? <div className="flag"><img src={Flag} alt="logo" /></div> : undefined }
                     {(tile.uncover) ? tile.number : undefined }
             </button>
         )

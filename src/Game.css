@@ -80,8 +80,9 @@
 }
 
 .flag{
-  height: 2vmin;
-  margin-top: 0px;
+  /* background-color: #ff6666; */
+  /* display: block; */
+  margin: 0 auto;
 }
 
 .game-status{
