@@ -38,7 +38,7 @@ In both possible configurations, the right four boundary tiles are the same, mea
 
 At this stage, all the possible configurations found but no boundary tile is safe. We have no choice but to make a guess. Fortunately, the configurations we found can help us to make a smart guess. By stating all the possible mine occurrence, we can get the mine occurrence  probability of each boundary tile. Then, uncover the boundary tile with smallest probability can give us the biggest chance to go further. For example:
 
-<img src="demo/stage4a.png" width="200" />
+<img src="demo/stage4a.png" width="300" />
 
 We will choose one of the four boundary tiles with 0.25 probability instead of from all eight boundary tiles to uncover. 
 
