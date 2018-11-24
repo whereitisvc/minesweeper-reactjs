@@ -1,7 +1,7 @@
 {
   "main.css": "/minesweeper-reactjs/static/css/main.cc4c67f7.chunk.css",
-  "main.js": "/minesweeper-reactjs/static/js/main.7ae301fe.chunk.js",
-  "main.js.map": "/minesweeper-reactjs/static/js/main.7ae301fe.chunk.js.map",
+  "main.js": "/minesweeper-reactjs/static/js/main.568944e9.chunk.js",
+  "main.js.map": "/minesweeper-reactjs/static/js/main.568944e9.chunk.js.map",
   "static/css/1.6626a50c.chunk.css": "/minesweeper-reactjs/static/css/1.6626a50c.chunk.css",
   "static/js/1.463b5f6b.chunk.js": "/minesweeper-reactjs/static/js/1.463b5f6b.chunk.js",
   "static/js/1.463b5f6b.chunk.js.map": "/minesweeper-reactjs/static/js/1.463b5f6b.chunk.js.map",
@@ -23,9 +23,9 @@
   "static/media/close2.png": "/minesweeper-reactjs/static/media/close2.ecb287c7.png",
   "static/media/New.svg": "/minesweeper-reactjs/static/media/New.4fe15c63.svg",
   "static/media/close1.png": "/minesweeper-reactjs/static/media/close1.b5040424.png",
-  "static/css/main.cc4c67f7.chunk.css.map": "/minesweeper-reactjs/static/css/main.cc4c67f7.chunk.css.map",
   "static/css/1.6626a50c.chunk.css.map": "/minesweeper-reactjs/static/css/1.6626a50c.chunk.css.map",
+  "static/css/main.cc4c67f7.chunk.css.map": "/minesweeper-reactjs/static/css/main.cc4c67f7.chunk.css.map",
   "index.html": "/minesweeper-reactjs/index.html",
-  "precache-manifest.f2fe1f78abc9bb87eaaeda6344720ae0.js": "/minesweeper-reactjs/precache-manifest.f2fe1f78abc9bb87eaaeda6344720ae0.js",
+  "precache-manifest.05e3f996cf4be4602da2c33ca9477978.js": "/minesweeper-reactjs/precache-manifest.05e3f996cf4be4602da2c33ca9477978.js",
   "service-worker.js": "/minesweeper-reactjs/service-worker.js"
 }
